@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint'
 import globals from 'globals'
 import js from '@eslint/js'
 
-import { plugin } from '../plugin.js'
+import { plugin } from '../plugin'
 
 
 export const recommended = defineConfig([

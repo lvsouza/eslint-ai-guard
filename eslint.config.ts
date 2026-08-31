@@ -1,6 +1,6 @@
 import { defineConfig } from 'eslint/config'
 
-import { recommended } from './src/configs/recommended.js'
+import { recommended } from './src/configs/recommended'
 
 
 // Config do próprio repo (dogfooding) - consome o plugin via src

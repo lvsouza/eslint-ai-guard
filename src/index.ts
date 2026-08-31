@@ -1,7 +1,7 @@
-import { recommended } from './configs/recommended.js'
-import { plugin } from './plugin.js'
+import { recommended } from './configs/recommended'
+import { plugin } from './plugin'
 
-export * from './rules/index.js'
+export * from './rules/index'
 
 
 const aiGuardPlugin = {

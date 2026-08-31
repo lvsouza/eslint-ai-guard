@@ -1,6 +1,6 @@
-import { filenamePascalCase } from './rules/FilenamePascalCase.js'
-import { noMultilineImports } from './rules/NoMultilineImports.js'
-import { sortImports } from './rules/SortImports.js'
+import { filenamePascalCase } from './rules/FilenamePascalCase'
+import { noMultilineImports } from './rules/NoMultilineImports'
+import { sortImports } from './rules/SortImports'
 
 
 export const plugin = {

@@ -1,3 +1,3 @@
-export { filenamePascalCase } from './FilenamePascalCase.js'
-export { noMultilineImports } from './NoMultilineImports.js'
-export { sortImports } from './SortImports.js'
+export { filenamePascalCase } from './FilenamePascalCase'
+export { noMultilineImports } from './NoMultilineImports'
+export { sortImports } from './SortImports'
