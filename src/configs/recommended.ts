@@ -1,25 +1,18 @@
-import { importX, createNodeResolver } from 'eslint-plugin-import-x'
-import { defineConfig, globalIgnores } from 'eslint/config'
+import { createNodeResolver, importX } from 'eslint-plugin-import-x'
 import stylistic from '@stylistic/eslint-plugin'
+import { defineConfig } from 'eslint/config'
 import tseslint from 'typescript-eslint'
-import globals from 'globals'
-import js from '@eslint/js'
 
 import { plugin } from '../plugin'
 
 
 export const recommended = defineConfig([
-  globalIgnores(['dist', 'src/services/generated', 'scripts/types']),
   {
-    files: ['**/*.{ts,tsx}'],
-    extends: [js.configs.recommended, tseslint.configs.recommended],
-    languageOptions: {
-      globals: globals.browser,
-    },
     plugins: {
       '@stylistic': stylistic,
       'import-x': importX,
       'ai-rules': plugin,
+      '@typescript-eslint': tseslint.plugin,
     },
     settings: {
       'import-x/resolver-next': [
@@ -49,12 +42,6 @@ export const recommended = defineConfig([
         { selector: 'interface', format: ['PascalCase'], prefix: ['I'] },
         { selector: 'typeAlias', format: ['PascalCase'], prefix: ['T'] },
       ],
-    },
-  },
-  {
-    files: ['**/*.d.ts', 'scripts/**/*'],
-    rules: {
-      '@typescript-eslint/naming-convention': 'off',
     },
   },
 ])

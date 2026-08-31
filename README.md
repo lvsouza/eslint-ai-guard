@@ -42,14 +42,23 @@ bun add -d eslint-plugin-ai-rules eslint typescript
 
 ## Quick Start
 
-### `eslint.config.ts` (recommended)
+### `eslint.config.ts` (recommended) — you define `files`
+
+`recommended` is file-agnostic (only `plugins` + `settings` + `rules`). Define `files` in your config:
 
 ```ts
 import aiRules from 'eslint-plugin-ai-rules'
 
 export default [
-  ...aiRules.configs.recommended,
+  { files: ['**/*.{ts,tsx}'], ...aiRules.configs.recommended[0] },
+  // or spread: ...aiRules.configs.recommended with your own files wrapper
 ]
+
+// Alternative with defineConfig:
+import { defineConfig } from 'eslint/config'
+export default defineConfig([
+  { files: ['**/*.{ts,tsx}'], extends: [aiRules.configs.recommended] },
+])
 ```
 
 ### `eslint.config.js` / `eslint.config.mjs`
@@ -58,7 +67,7 @@ export default [
 import aiRules from 'eslint-plugin-ai-rules'
 
 export default [
-  ...aiRules.configs.recommended,
+  { files: ['**/*.{js,ts,tsx}'], ...aiRules.configs.recommended[0] },
 ]
 ```
 
@@ -69,7 +78,7 @@ import aiRules from 'eslint-plugin-ai-rules'
 import { defineConfig } from 'eslint/config'
 
 export default defineConfig([
-  ...aiRules.configs.recommended,
+  { files: ['**/*.{ts,tsx}'], ...aiRules.configs.recommended[0] },
   {
     // turn off filename check for tests or generated code
     files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', 'scripts/**/*'],
@@ -97,11 +106,10 @@ npx eslint --fix .   # autofix for sort-imports / no-multiline-imports
 
 ### `recommended` preset
 
-`src/configs/recommended.ts` exports `defineConfig([...])` with:
+`src/configs/recommended.ts` exports `defineConfig([...])` with **only** `plugins` + `settings` + `rules` (file-agnostic) — you define `files`/`ignores`/`languageOptions`:
 
-- `globalIgnores(['dist', 'src/services/generated', 'scripts/types'])`
-- `files: ['**/*.{ts,tsx}']` — `extends: [js.configs.recommended, tseslint.configs.recommended]`, `languageOptions.globals: globals.browser`, `import-x/resolver-next` with `extensions: ['.ts','.tsx','.d.ts','.js','.jsx']`
 - `plugins: { '@stylistic': stylistic, 'import-x': importX, 'ai-rules': plugin }`
+- `settings: { 'import-x/resolver-next': ... }` with `extensions: ['.ts','.tsx','.d.ts','.js','.jsx']`
 - Rules (all `error` unless noted):
 
 | Rule | Default | Notes |
@@ -115,9 +123,9 @@ npx eslint --fix .   # autofix for sort-imports / no-multiline-imports
 | `@stylistic/semi` | `['error','never']` | No semicolons |
 | `@typescript-eslint/consistent-type-imports` | `['error',{prefer:'type-imports'}]` |  |
 | `@typescript-eslint/no-unused-vars` | `['error',{argsIgnorePattern:'^_',varsIgnorePattern:'^_'}]` |  |
-| `@typescript-eslint/naming-convention` | `['error', {interface:'PascalCase' prefix I}, {typeAlias:'PascalCase' prefix T}]` | Second override disables it for `**/*.d.ts` + `scripts/**/*` |
+| `@typescript-eslint/naming-convention` | `['error', {interface:'PascalCase' prefix I}, {typeAlias:'PascalCase' prefix T}]` | Disable per-project for `**/*.d.ts` via your own override if needed |
 
-Second config entry: `files: ['**/*.d.ts','scripts/**/*']` → `naming-convention: off`.
+`recommended` has no `files`/`ignores` — add them in your `eslint.config.*` (see Quick Start). This repo's `eslint.config.mjs` adds `globalIgnores`, `files: ['**/*.{ts,tsx}']` with `extends: [js.configs.recommended, tseslint.configs.recommended]` + `globals.browser` locally.
 
 ### Custom setup (without `recommended`)
 
