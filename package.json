@@ -17,11 +17,19 @@
     "dist"
   ],
   "scripts": {
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "verify": "npm run typecheck && npm run lint && npm run build && npm pack --dry-run",
+    "prepack": "npm run build",
+    "prepublishOnly": "git diff --quiet || (echo '✖ uncommitted changes — commit before publishing' && exit 1) && npm run verify",
+    "postpublish": "echo '✔ published. Run: git push --follow-tags'"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "eslint",
