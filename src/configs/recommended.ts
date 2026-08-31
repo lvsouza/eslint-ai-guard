@@ -19,7 +19,7 @@ export const recommended = defineConfig([
     plugins: {
       '@stylistic': stylistic,
       'import-x': importX,
-      'ai-guard': plugin,
+      'ai-rules': plugin,
     },
     settings: {
       'import-x/resolver-next': [
@@ -29,9 +29,9 @@ export const recommended = defineConfig([
       ],
     },
     rules: {
-      'ai-guard/sort-imports': 'error',
-      'ai-guard/no-multiline-imports': 'error',
-      'ai-guard/filename-pascal-case': 'error',
+      'ai-rules/sort-imports': 'error',
+      'ai-rules/no-multiline-imports': 'error',
+      'ai-rules/filename-pascal-case': 'error',
       'max-len': 'off',
       'import-x/no-duplicates': 'error',
       'import-x/no-default-export': 'off',

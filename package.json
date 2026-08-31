@@ -1,7 +1,7 @@
 {
-  "name": "eslint-plugin-ai-guard",
+  "name": "eslint-plugin-ai-rules",
   "version": "0.1.0",
-  "description": "ESLint plugin com regras úteis para projetos com ESLint - AI Guard",
+  "description": "ESLint plugin com regras úteis para projetos com ESLint - AI Rules",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -27,7 +27,7 @@
     "eslint",
     "eslintplugin",
     "eslint-plugin",
-    "ai-guard"
+    "ai-rules"
   ],
   "author": "",
   "license": "MIT",
