@@ -21,7 +21,6 @@ Flat-config only ESLint plugin that bundles useful rules for AI-generated code. 
 - Node `>=18` (`package.json` `engines`)
 - ESLint `^8.57.0 || ^9.0.0` (peer) — flat config requires ESLint 9
 - TypeScript `>=5.0.0` (peer)
-- `jiti` if you use `eslint.config.ts` (ESLint loads TS config via `jiti`)
 
 `@eslint/js`, `eslint-plugin-import-x`, `@stylistic/eslint-plugin`, `typescript-eslint`, `globals` are already `dependencies` — you don't need to install them.
 
@@ -40,11 +39,6 @@ pnpm add -D eslint-plugin-ai-rules eslint typescript
 # bun
 bun add -d eslint-plugin-ai-rules eslint typescript
 ```
-
-> `jiti` is required only for `eslint.config.ts`. Install it as dev dep if you use TS config:
-> ```bash
-> npm i -D jiti
-> ```
 
 ## Quick Start
 
@@ -233,11 +227,11 @@ Plugin itself uses `module: ESNext` + `moduleResolution: bundler` (`tsconfig.jso
 
 ## Troubleshooting
 
-**`jiti` is required for loading TypeScript configuration files**
+**Missing `dist` before lint (repo uses `eslint.config.mjs` → `dist`)**
 ```
-Error: The 'jiti' library is required for loading TypeScript configuration files.
+Error: Cannot find module './dist/index.js'
 ```
-Fix: `npm i -D jiti`
+Fix: `npm run build` first. This repo's `eslint.config.mjs` imports from `dist` (no `jiti`), so `prelint` runs `build` automatically (`package.json` `prelint`).
 
 **File ignored because outside of base path**
 You passed an absolute path outside the config's `basePath`. Run `npx eslint .` from project root or use `npx eslint --no-config-lookup -c ./eslint.config.js ./src/file.ts` with correct cwd.
@@ -279,7 +273,7 @@ eslint-ai-guard/  # package: eslint-plugin-ai-rules
 │       ├── SortImports.ts    # also exports getSortedContent
 │       └── index.ts
 ├── eslint/                   # deprecated original implementations
-├── eslint.config.ts          # dogfooding: ...recommended + disable filename for src
+├── eslint.config.mjs         # dogfooding: ...aiRules.configs.recommended from dist
 ├── tsconfig.json             # ESNext/bundler, no .js extensions
 ├── tsup.config.ts            # entry src/index.ts, format cjs+esm, dts, splitting:false
 ├── package.json              # type module, exports ., files [dist]
@@ -299,9 +293,8 @@ eslint-ai-guard/  # package: eslint-plugin-ai-rules
 
 ```bash
 npm version patch|minor|major
-npm run build
-npm publish --access public
-# prepublishOnly runs build automatically
+npm publish --access public  # prepublishOnly runs verify (typecheck+build+lint+pack)
+# or manually: npm run verify && npm publish --access public
 ```
 
 ## Legacy
