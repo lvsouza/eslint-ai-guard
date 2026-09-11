@@ -4,6 +4,7 @@ import path from 'node:path'
 
 interface IFilenamePascalCaseOptions {
   ignore?: Array<string | RegExp>
+  ignoreMiddleExtensions?: boolean
 }
 
 export const filenamePascalCase: Rule.RuleModule = {
@@ -15,6 +16,7 @@ export const filenamePascalCase: Rule.RuleModule = {
         type: 'object',
         properties: {
           ignore: { type: 'array', items: { type: 'string' } },
+          ignoreMiddleExtensions: { type: 'boolean' },
         },
         additionalProperties: false,
       },
@@ -25,7 +27,8 @@ export const filenamePascalCase: Rule.RuleModule = {
   },
   create(context) {
     const options = (context.options[0] ?? {}) as IFilenamePascalCaseOptions
-    const ignoreMatchers = (options.ignore ?? []).flatMap((pattern) => {
+    const { ignore = [], ignoreMiddleExtensions = true } = options
+    const ignoreMatchers = ignore.flatMap((pattern) => {
       try {
         return [pattern instanceof RegExp ? pattern : new RegExp(pattern)]
       } catch {
@@ -42,7 +45,7 @@ export const filenamePascalCase: Rule.RuleModule = {
 
     const basename = path.basename(physicalFilename)
     const cwd = process.cwd()
-    const relativePath = physicalFilename.startsWith(cwd)
+    const relativePath = physicalFilename.startsWith(cwd + path.sep)
       ? physicalFilename.slice(cwd.length + 1)
       : physicalFilename
 
@@ -59,26 +62,32 @@ export const filenamePascalCase: Rule.RuleModule = {
     if (basename.endsWith('.d.ts')) return {}
     if (basename.endsWith('.css')) return {}
 
-    const ext = path.extname(basename) // .ts
-    // Para casos como Component.spec.ts -> ext .ts, nameWithoutExt Component.spec - tratamos mantendo só base antes do primeiro ponto?
-    // Mantemos compat com original: remove apenas última extensão .ts/.tsx/.js/.jsx
-    const nameWithoutExt = basename.replace(/\.(ts|tsx|js|jsx)$/, '')
+    const extension = basename.match(/\.(ts|tsx|js|jsx)$/)?.[0] ?? ''
+    const namePart = extension ? basename.slice(0, -extension.length) : basename
+    const baseName = namePart.split('.')[0]
 
-    if (!/^[A-Z][a-zA-Z0-9]*$/.test(nameWithoutExt)) {
-      const pascalCase = nameWithoutExt
+    const toPascalCase = (value: string): string =>
+      value
         .split(/[-_]/)
         .map(part => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')
 
-      // Preserva extensão original (ex: .tsx)
-      const originalExt = basename.slice(nameWithoutExt.length) || ext
-      const expected = `${pascalCase}${originalExt}`
+    const segments = ignoreMiddleExtensions ? [baseName] : namePart.split('.')
+    const isValid = segments.every(segment => /^[A-Z][a-zA-Z0-9]*$/.test(segment))
 
-      context.report({
-        loc: { line: 1, column: 0 },
-        messageId: 'invalid',
-        data: { basename, expected },
-      })
+    if (!isValid) {
+      const expectedName = ignoreMiddleExtensions
+        ? `${toPascalCase(baseName)}${namePart.slice(baseName.length)}`
+        : segments.map(toPascalCase).join('.')
+      const expected = `${expectedName}${extension}`
+
+      if (expected !== basename) {
+        context.report({
+          loc: { line: 1, column: 0 },
+          messageId: 'invalid',
+          data: { basename, expected },
+        })
+      }
     }
 
     return {}

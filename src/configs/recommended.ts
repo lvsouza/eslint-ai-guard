@@ -1,12 +1,12 @@
 import { createNodeResolver, importX } from 'eslint-plugin-import-x'
 import stylistic from '@stylistic/eslint-plugin'
-import { defineConfig } from 'eslint/config'
 import tseslint from 'typescript-eslint'
+import type { Linter } from 'eslint'
 
 import { plugin } from '../plugin'
 
 
-export const recommended = defineConfig([
+export const recommended: Linter.Config[] = [
   {
     plugins: {
       '@stylistic': stylistic,
@@ -44,6 +44,6 @@ export const recommended = defineConfig([
       ],
     },
   },
-])
+]
 
 export default recommended

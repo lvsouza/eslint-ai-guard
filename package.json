@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-ai-rules",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "ESLint plugin com regras úteis para projetos com ESLint - AI Rules",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -24,7 +24,8 @@
     "prelint": "yarn build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "verify": "yarn typecheck && yarn build && yarn lint && npm pack --dry-run",
+    "test": "yarn build && node --test test/*.test.mjs",
+    "verify": "yarn typecheck && yarn test && yarn lint && npm pack --dry-run",
     "prepack": "yarn build",
     "prepublishOnly": "git diff --quiet || (echo '✖ uncommitted changes — commit before publishing' && exit 1) && yarn verify",
     "postpublish": "echo '✔ published. Run: git push --follow-tags'"
@@ -38,10 +39,18 @@
     "eslint-plugin",
     "ai-rules"
   ],
-  "author": "",
+  "author": "Lucas Souza <ls18017@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lvsouza/eslint-ai-guard.git"
+  },
+  "homepage": "https://github.com/lvsouza/eslint-ai-guard#readme",
+  "bugs": {
+    "url": "https://github.com/lvsouza/eslint-ai-guard/issues"
+  },
   "peerDependencies": {
-    "eslint": "^8.57.0 || ^9.0.0",
+    "eslint": "^9.0.0",
     "typescript": ">=5.0.0"
   },
   "dependencies": {

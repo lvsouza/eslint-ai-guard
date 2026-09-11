@@ -19,7 +19,7 @@ Flat-config only ESLint plugin that bundles useful rules for AI-generated code. 
 ## Requirements
 
 - Node `>=18` (`package.json` `engines`)
-- ESLint `^8.57.0 || ^9.0.0` (peer) — flat config requires ESLint 9
+- ESLint `^9.0.0` (peer) — flat config only
 - TypeScript `>=5.0.0` (peer)
 
 `@eslint/js`, `eslint-plugin-import-x`, `@stylistic/eslint-plugin`, `typescript-eslint`, `globals` are already `dependencies` — you don't need to install them.
@@ -44,20 +44,28 @@ bun add -d eslint-plugin-ai-rules eslint typescript
 
 ### `eslint.config.ts` (recommended) — you define `files`
 
-`recommended` is file-agnostic (only `plugins` + `settings` + `rules`). Define `files` in your config:
+`recommended` is file-agnostic (only `plugins` + `settings` + `rules`) and does **not** configure a parser. Pair it with `typescript-eslint` (or `@typescript-eslint/parser`) and define `files`:
 
 ```ts
 import aiRules from 'eslint-plugin-ai-rules'
+import tseslint from 'typescript-eslint'
 
 export default [
+  ...tseslint.configs.recommended,
   { files: ['**/*.{ts,tsx}'], ...aiRules.configs.recommended[0] },
-  // or spread: ...aiRules.configs.recommended with your own files wrapper
 ]
+```
 
-// Alternative with defineConfig:
+Alternative with `defineConfig` (ESLint >= 9.22):
+
+```ts
 import { defineConfig } from 'eslint/config'
+import aiRules from 'eslint-plugin-ai-rules'
+import tseslint from 'typescript-eslint'
+
 export default defineConfig([
-  { files: ['**/*.{ts,tsx}'], extends: [aiRules.configs.recommended] },
+  ...tseslint.configs.recommended,
+  { files: ['**/*.{ts,tsx}'], extends: aiRules.configs.recommended },
 ])
 ```
 
@@ -65,8 +73,10 @@ export default defineConfig([
 
 ```js
 import aiRules from 'eslint-plugin-ai-rules'
+import tseslint from 'typescript-eslint'
 
 export default [
+  ...tseslint.configs.recommended,
   { files: ['**/*.{js,ts,tsx}'], ...aiRules.configs.recommended[0] },
 ]
 ```
@@ -163,17 +173,24 @@ Enforces `PascalCase` for file names. The rule is file-agnostic: it validates ev
 - **Type:** `suggestion`, no autofix, `messageId: invalid`
 - **Ignores:** `index.{ts,tsx,js,jsx}`, `*.d.ts`, `*.css`, dotfiles
 - **Checks:** `path.basename` from `getPhysicalFilename()` / `context.filename`, `^[A-Z][a-zA-Z0-9]*$`, `kebab/snake -> PascalCase` conversion
-- **Options:** `ignore` — array of regex strings matched against the basename and the path relative to `cwd` (same idea as `unicorn/filename-case`). Use it for tool-mandated names like `*.config.*`, tests/specs, generated or vendored code.
+- **Options:**
+  - `ignore` — array of regex strings matched against the basename and the path relative to `cwd` (same idea as `unicorn/filename-case`). Use it for tool-mandated names like `*.config.*`, tests/specs, generated or vendored code.
+  - `ignoreMiddleExtensions` — `boolean`, default `true`. When `true`, only the base name before the first dot is validated, so `ValidationRanges.test.ts` is valid and `my-component.test.ts` is renamed to `MyComponent.test.ts`. When `false`, every dot-separated segment must be PascalCase, so `ValidationRanges.test.ts` is renamed to `ValidationRanges.Test.ts` (same idea as `unicorn/filename-case`).
 
 ```ts
-// my-component.ts  ❌  File name "my-component.ts" must be in PascalCase. Rename to "MyComponent.ts".
-// MyComponent.ts   ✅
+// my-component.ts         ❌  Rename to "MyComponent.ts"
+// ValidationRanges.test.ts  ✅ (ignoreMiddleExtensions: true, default)
+// ValidationRanges.test.ts  ❌  Rename to "ValidationRanges.Test.ts" (ignoreMiddleExtensions: false)
+// MyComponent.ts          ✅
 ```
 
 ```ts
 'ai-rules/filename-pascal-case': [
   'error',
-  { ignore: ['\\.config\\.', '\\.(test|spec)\\.', '^generated/'] },
+  {
+    ignore: ['\\.config\\.', '^generated/'],
+    ignoreMiddleExtensions: false,
+  },
 ]
 ```
 
@@ -253,10 +270,10 @@ Fix: `npm run build` first. This repo's `eslint.config.mjs` imports from `dist` 
 You passed an absolute path outside the config's `basePath`. Run `npx eslint .` from project root or use `npx eslint --no-config-lookup -c ./eslint.config.js ./src/file.ts` with correct cwd.
 
 **Flat config only**
-This plugin exports `defineConfig` arrays. It does not support legacy `.eslintrc`. Use `eslint.config.{js,ts}`.
+This plugin exports flat config arrays. It does not support legacy `.eslintrc`. Use `eslint.config.{js,ts}`.
 
 **Filename rule too strict for tests/configs**
-The rule checks every linted file. Either pass the `ignore` option (`{ ignore: ['\\.config\\.', '\\.(test|spec)\\.'] }`) or disable `ai-rules/filename-pascal-case` for `**/*.test.*`, `**/*.spec.*`, `*.config.*`, generated code, or your own fixtures via an override (see Quick Start).
+The rule checks every linted file. Test/spec files with a PascalCase base (e.g. `ValidationRanges.test.ts`) pass by default via `ignoreMiddleExtensions: true`. For tool-mandated names like `*.config.*`, generated or vendored code, pass the `ignore` option (`{ ignore: ['\\.config\\.', '^generated/'] }`) or disable `ai-rules/filename-pascal-case` for those files via an override (see Quick Start).
 
 ## Development
 
@@ -266,10 +283,12 @@ cd eslint-ai-guard
 npm install
 
 npm run typecheck  # tsc --noEmit
+npm test           # node:test + dist build
 npm run lint       # eslint .
 npm run lint -- --fix
 npm run build      # tsup -> dist/index.js + dist/index.cjs + dist/index.d.ts
 npm run dev        # tsup --watch
+npm run verify     # typecheck + test + lint + pack
 npm pack --dry-run # verify files: dist only
 ```
 
@@ -281,13 +300,14 @@ eslint-ai-guard/  # package: eslint-plugin-ai-rules
 │   ├── index.ts              # re-exports plugin + recommended
 │   ├── plugin.ts             # plugin.meta + rules
 │   ├── configs/
-│   │   ├── recommended.ts    # defineConfig preset (bundled rules)
+│   │   ├── recommended.ts    # flat-config preset (bundled rules)
 │   │   └── index.ts
 │   └── rules/
 │       ├── FilenamePascalCase.ts
 │       ├── NoMultilineImports.ts
 │       ├── SortImports.ts    # also exports getSortedContent
 │       └── index.ts
+├── test/                     # node:test suites (run against dist)
 ├── eslint/                   # deprecated original implementations
 ├── eslint.config.mjs         # dogfooding: ...aiRules.configs.recommended from dist
 ├── tsconfig.json             # ESNext/bundler, no .js extensions
@@ -302,14 +322,14 @@ eslint-ai-guard/  # package: eslint-plugin-ai-rules
 2. Export it from `src/rules/index.ts`
 3. Register in `src/plugin.ts` (`rules: { 'my-rule': myRule }`)
 4. Enable in `src/configs/recommended.ts` (`'ai-rules/my-rule': 'error'`)
-5. Add fixture and test `npx eslint --fix` on `src/__fixtures__/MyRule_test.ts`
-6. `npm run typecheck && npm run build && npx eslint .`
+5. Add a `RuleTester` case in `test/` (add a fixture if needed)
+6. `npm run verify`
 
 ### Publishing
 
 ```bash
 npm version patch|minor|major
-npm publish --access public  # prepublishOnly runs verify (typecheck+build+lint+pack)
+npm publish --access public  # prepublishOnly runs verify (typecheck+test+lint+pack)
 # or manually: npm run verify && npm publish --access public
 ```
 
