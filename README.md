@@ -161,12 +161,20 @@ Brief overview. See source in `src/rules/` for full logic.
 Enforces `PascalCase` for file names. The rule is file-agnostic: it validates every file ESLint decides to lint, following the flat-config `files`/`ignores` defined in the consumer's config (same pattern as other filename rules).
 
 - **Type:** `suggestion`, no autofix, `messageId: invalid`
-- **Ignores:** `index.{ts,tsx,js,jsx}`, `*.d.ts`, `*.css`
+- **Ignores:** `index.{ts,tsx,js,jsx}`, `*.d.ts`, `*.css`, dotfiles
 - **Checks:** `path.basename` from `getPhysicalFilename()` / `context.filename`, `^[A-Z][a-zA-Z0-9]*$`, `kebab/snake -> PascalCase` conversion
+- **Options:** `ignore` — array of regex strings matched against the basename and the path relative to `cwd` (same idea as `unicorn/filename-case`). Use it for tool-mandated names like `*.config.*`, tests/specs, generated or vendored code.
 
 ```ts
 // my-component.ts  ❌  File name "my-component.ts" must be in PascalCase. Rename to "MyComponent.ts".
 // MyComponent.ts   ✅
+```
+
+```ts
+'ai-rules/filename-pascal-case': [
+  'error',
+  { ignore: ['\\.config\\.', '\\.(test|spec)\\.', '^generated/'] },
+]
 ```
 
 To scope or disable it, use your own config (as this repo does in `eslint.config.mjs`):
@@ -248,7 +256,7 @@ You passed an absolute path outside the config's `basePath`. Run `npx eslint .` 
 This plugin exports `defineConfig` arrays. It does not support legacy `.eslintrc`. Use `eslint.config.{js,ts}`.
 
 **Filename rule too strict for tests/configs**
-The rule checks every linted file. Disable `ai-rules/filename-pascal-case` for `**/*.test.*`, `**/*.spec.*`, `*.config.*`, generated code, or your own fixtures via an override (see Quick Start).
+The rule checks every linted file. Either pass the `ignore` option (`{ ignore: ['\\.config\\.', '\\.(test|spec)\\.'] }`) or disable `ai-rules/filename-pascal-case` for `**/*.test.*`, `**/*.spec.*`, `*.config.*`, generated code, or your own fixtures via an override (see Quick Start).
 
 ## Development
 
