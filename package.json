@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-ai-rules",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "ESLint plugin com regras úteis para projetos com ESLint - AI Rules",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -18,15 +18,15 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "prebuild": "npm run clean",
+    "prebuild": "yarn clean",
     "build": "tsup",
     "dev": "tsup --watch",
-    "prelint": "npm run build",
+    "prelint": "yarn build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run typecheck && npm run build && npm run lint && npm pack --dry-run",
-    "prepack": "npm run build",
-    "prepublishOnly": "git diff --quiet || (echo '✖ uncommitted changes — commit before publishing' && exit 1) && npm run verify",
+    "verify": "yarn typecheck && yarn build && yarn lint && npm pack --dry-run",
+    "prepack": "yarn build",
+    "prepublishOnly": "git diff --quiet || (echo '✖ uncommitted changes — commit before publishing' && exit 1) && yarn verify",
     "postpublish": "echo '✔ published. Run: git push --follow-tags'"
   },
   "publishConfig": {

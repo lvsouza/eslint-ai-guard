@@ -6,7 +6,7 @@ import { sortImports } from './rules/SortImports'
 export const plugin = {
   meta: {
     name: 'eslint-plugin-ai-rules',
-    version: '0.1.0',
+    version: '0.1.2',
   },
   rules: {
     'filename-pascal-case': filenamePascalCase,

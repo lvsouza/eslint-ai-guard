@@ -19,20 +19,7 @@ export const filenamePascalCase: Rule.RuleModule = {
       context.filename ??
       ''
 
-    const cwd =
-      (context as unknown as { getCwd?: () => string }).getCwd?.() ?? process.cwd()
-
-    // Normaliza para posix para comparar com src/ e scripts/
-    const normalizedPhysical = physicalFilename.split(path.sep).join('/')
-    const normalizedCwd = cwd.split(path.sep).join('/')
-
-    const relativePath = normalizedPhysical.startsWith(normalizedCwd)
-      ? normalizedPhysical.slice(normalizedCwd.length + 1)
-      : normalizedPhysical
-
-    if (!relativePath.startsWith('src/') && !relativePath.startsWith('scripts/')) return {}
-
-    const basename = path.basename(relativePath)
+    const basename = path.basename(physicalFilename)
 
     if (basename === 'index.ts' || basename === 'index.tsx' || basename === 'index.js' || basename === 'index.jsx') return {}
     if (basename.endsWith('.d.ts')) return {}
