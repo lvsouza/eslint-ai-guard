@@ -1,4 +1,4 @@
-import type { ESLint } from 'eslint'
+import type { ESLint, Linter } from 'eslint'
 
 import { recommended } from './configs/recommended'
 import { plugin } from './plugin'
@@ -6,7 +6,13 @@ import { plugin } from './plugin'
 export * from './rules/index'
 
 
-const aiGuardPlugin: ESLint.Plugin = {
+interface IAiRulesPlugin extends Omit<ESLint.Plugin, 'configs'> {
+  configs: {
+    recommended: Linter.Config[]
+  }
+}
+
+const aiGuardPlugin: IAiRulesPlugin = {
   ...plugin,
   configs: {
     recommended,
